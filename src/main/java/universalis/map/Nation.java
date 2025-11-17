@@ -14,7 +14,8 @@ public class Nation {
     private final List<Province> provinces = new ArrayList<>();
     private static final int MINIMUM_ARMY_SIZE = 1;
     private static final int CAPTURE_DEVELOPMENT_PENALTY = -1;
-    private static final int ARMY_GROWTH_MODIFIER = 50;
+    private static final int ARMY_GROWTH_MODIFIER = 5;
+    private static final int ARMY_CAP_MODIFIER = 8;
     private static final int ARMY_LOSS_FACTOR = 2;
     private static final int X = 0;
     private static final int Y = 1;
@@ -60,7 +61,7 @@ public class Nation {
     }
 
     public int armyCap() {
-        return Math.max(MINIMUM_ARMY_SIZE, ARMY_GROWTH_MODIFIER * getTotalDevelopment());
+        return Math.max(MINIMUM_ARMY_SIZE, ARMY_CAP_MODIFIER * getTotalDevelopment());
     }
 
     public void growArmy() {
