@@ -19,7 +19,7 @@ Mini Universalis is a self playing game inspired by Polymorphia. It runs a simul
   * Each turn a nation grows its army by `total_development * ARMY_GROWTH_MODIFIER`, bounded by the cap and constant is set at **5**.
 * Battles compare nation armies. After any battle both sides' armies are halved, with integer division.
   * Capture only happens when the attacker's army is larger than the defender's; ties halve both armies, but there is no transfer of ownership.
-* Provinces gain development point during `distributeDevelopmentPoints()` each turn. The current value is `province_count / **2**` points per nation. 
+* Provinces gain development point during `distributeDevelopmentPoints()` each turn. The current value is `province_count / 2` points per nation. 
   * Province development is locked between **0** and **25**.
 * Nations choose their actions each turn based on local conditions; empty neighbors, relative army size, and a low-army threshold; and employ *Offensive* or *Defensive*.
 
