@@ -10,7 +10,5 @@ public class NoOpStrategy implements Strategy {
     }
 
     @Override
-    public String toString() {
-        return "NoOp Strategy";
-    }
+    public String toString() { return "NoOp Strategy"; }
 }

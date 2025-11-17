@@ -20,7 +20,5 @@ public class DefensiveStrategy implements Strategy {
     }
 
     @Override
-    public String toString() {
-        return "Defensive Strategy";
-    }
+    public String toString() { return "Defensive Strategy"; }
 }
