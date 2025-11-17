@@ -8,25 +8,25 @@ Team Members:
 
 ## Description 
 
-Mini Universalis is a self playing game inspired by Polymorphia. It runs a simulation on a 2D grid of `Province` tiles populated by randomly seeded `Nation`s. Nations expand, develop, and fight until only one remains or a stalemate is detected. 
+Mini Universalis is a self playing game inspired by Polymorphia. It runs a simulation on a 2D grid of `Province` tiles populated by randomly seeded `Nations`. Nations expand, develop, and fight until only one remains or a stalemate is detected. 
 
 ### Current Implementation
 
 * The map is an X*Y grid of `Province` objects. Provinces have a *development* value, which is a configurable constant, and an owning `Nation`, or null.
-* Nations are seeded on random empty provinces at game startup. Each nation keeps a list of it provinces and a *army* as an integer.
+* Nations are seeded on random empty provinces at game startup. Each nation keeps a list of it provinces and an *army* as an integer.
 * Army capacity and growth are driven by a nation's total development:
-  * Army cap = `ARMY_CAP_MODIFIER * total_development`, constant is currently set at *8*.
-  * Each turn a nation grows its army by `total_development * ARMY_GROWTH_MODIFIER`, bounded by the cap and constant is set at *5*.
+  * Army cap = `ARMY_CAP_MODIFIER * total_development`, constant is currently set at **8**.
+  * Each turn a nation grows its army by `total_development * ARMY_GROWTH_MODIFIER`, bounded by the cap and constant is set at **5**.
 * Battles compare nation armies. After any battle both sides' armies are halved, with integer division.
   * Capture only happens when the attacker's army is larger than the defender's; ties halve both armies, but there is no transfer of ownership.
-* Provinces gain development point during `distributeDevelopmentPoints()` each turn. The current value is `province_count / *2*` points per nation. 
-  * Province development is locked between *0* and *25*.
+* Provinces gain development point during `distributeDevelopmentPoints()` each turn. The current value is `province_count / **2**` points per nation. 
+  * Province development is locked between **0** and **25**.
 * Nations choose their actions each turn based on local conditions; empty neighbors, relative army size, and a low-army threshold; and employ *Offensive* or *Defensive*.
 
 ### Game Rules
 
 * **Province**
-  * `development` is an integer bounded in a range of constants, right now *0* to *25*.
+  * `development` is an integer bounded in a range of constants, right now **0** to **25**.
   * Starting development is chosen as `MIN_DEV + random.nextInt(MAX_STARTING_DEV)` and is locked between `MIN_DEV...MAX_DEV`.
   * When a province is captured its development is reduced by a small penalty constant.
 
