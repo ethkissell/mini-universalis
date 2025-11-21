@@ -13,9 +13,10 @@ import java.util.*;
 public class Universalis {
     public static final int[][] DIRECTIONS = {{1,0},{-1,0},{0,1},{0,-1}};
     private static final int MAX_TURNS = 250;
-    private static final int INCREASE_DEVELOPMENT_VALUE = 1;
     private static final int MAX_NAME_LENGTH = 10;
-    private static final int DEVELOPMENT_PROVINCE_FACTOR = 2;
+
+    private static final int DEVELOPMENT_PROVINCE_FACTOR = Constants.DEVELOPMENT_PROVINCE_FACTOR;
+    private static final int INCREASE_DEVELOPMENT_VALUE = Constants.INCREASE_DEVELOPMENT_VALUE;
 
     private final Map map;
     private final List<Nation> nations = new ArrayList<>();
