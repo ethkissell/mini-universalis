@@ -76,9 +76,6 @@ public class Nation {
      * Called each turn: strategy acts, then grow army.
      */
     public void takeTurn(Universalis game) {
-//        debug to print what each strategy each nation is using
-//        System.out.println(name + " is using a " + strategy.toString());
-
         int totalDev = getTotalDevelopment();
         int cap = armyCap();
         boolean lowArmy = cap == 0 || ((double) army < 0.2 * cap);
