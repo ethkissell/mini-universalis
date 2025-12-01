@@ -10,6 +10,18 @@ Team Members:
 
 Mini Universalis is a self playing game inspired by Polymorphia. It runs a simulation on a 2D grid of `Province` tiles populated by randomly seeded `Nations`. Nations expand, develop, and fight until only one remains or a stalemate is detected. 
 
+### Visual Simulation
+
+The game features a JavaFX-based graphical user interface that visualizes the simulation in real-time.
+
+![Game Screenshot 1](Images/game_screenshot_1.png)
+![Game Screenshot 2](Images/game_screenshot_2.png)
+
+*   **Grid Visualization:** The map is rendered as a grid of colored squares, each representing a province.
+*   **Nation Colors:** Each nation is assigned a unique color based on its name hash.
+*   **Real-time Updates:** The map updates automatically as the simulation progresses.
+*   **Legend:** A legend on the right side shows the active nations and their province counts.
+
 ### Current Implementation
 
 * The map is an X*Y grid of `Province` objects. Provinces have a *development* value, which is a configurable constant, and an owning `Nation`, or null.
@@ -56,6 +68,9 @@ Mini Universalis is a self playing game inspired by Polymorphia. It runs a simul
 src/main/java
 └─ universalis
    ├─ Universalis.java              # main game logic
+   ├─ ui/
+   │  ├─ GameApplication.java        # JavaFX application entry point
+   │  └─ Launcher.java               # Launcher for JavaFX
    ├─ map/
    │  ├─ Map.java                    # grid + Map.Builder
    │  ├─ Province.java               # tile with development and owner
@@ -75,6 +90,11 @@ src/main/java
 * `Universalis`
   * Orchestrates turn loop, seeding, distribution of development points, map snapshots, and termination logic.
   * Provides a helper `setupDefaultGame(size, numNations)` for quick configuration.
+
+* `GameApplication` (UI)
+  * Initializes the JavaFX stage and scene.
+  * Subscribes to `GameEventBus` to receive game updates.
+  * Renders the map and legend on a `Canvas`.
 
 * `Map` + `Map.Builder`
   * Encapsulates the 2D array of `Province`.
@@ -108,10 +128,10 @@ src/main/java
   * `ProvinceFactory` and `NationFactory` produce objects; provinces, randomized nations; and isolate construction details.
 
 * **Singleton**
-  * For an event bus for the Visual Observer
+  * `GameEventBus` is a singleton used to decouple the game logic from the UI.
 
 * **Observer**
-  * Visual Observer for updating a UI
+  * The UI observes game events via the `GameEventBus`.
    
 ---
 
@@ -122,4 +142,17 @@ Unit tests are in `src/test/java`. Tests use an in-memory output capture, `ByteA
 * Single-turn and multi-turn progression tests.
 * Small deterministic battle tests to verify capture and army halving.
 * Full-game playthroughs.
-  * use playToCompletion_printsFullGameAndFinishes() in UnversalisTest
+
+## How to Run
+
+1. **Run the Simulation (UI)**:
+   ```bash
+   ./gradlew run
+   ```
+   This will launch the JavaFX window showing the game simulation.
+
+2. **Run Tests**:
+   ```bash
+   ./gradlew test
+   ```
+   This executes the unit tests to verify the game logic.
