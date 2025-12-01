@@ -30,14 +30,29 @@ public class Nation {
         this.strategy = strategy;
     }
 
-    public String getName() { return name; }
-    public void setStrategy(Strategy strategy) { this.strategy = strategy; }
+    public String getName() {
+        return name;
+    }
 
-    public List<Province> getProvinces() { return provinces; }
-    public int getProvinceCount() { return provinces.size(); }
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
 
-    public int getArmy() { return army; }
-    public void setArmy(int newArmy) { this.army = Math.max(MINIMUM_ARMY_SIZE, newArmy); }
+    public List<Province> getProvinces() {
+        return provinces;
+    }
+
+    public int getProvinceCount() {
+        return provinces.size();
+    }
+
+    public int getArmy() {
+        return army;
+    }
+
+    public void setArmy(int newArmy) {
+        this.army = Math.max(MINIMUM_ARMY_SIZE, newArmy);
+    }
 
     public void captureProvince(Province province) {
         if (province != null && !provinces.contains(province)) {
@@ -58,7 +73,8 @@ public class Nation {
 
     public int getTotalDevelopment() {
         int sum = 0;
-        for (Province province : provinces) sum += province.getDevelopment();
+        for (Province province : provinces)
+            sum += province.getDevelopment();
         return sum;
     }
 
@@ -68,7 +84,8 @@ public class Nation {
 
     public void growArmy() {
         int growth = getTotalDevelopment();
-        if (growth <= 0) return;
+        if (growth <= 0)
+            return;
         int cap = armyCap();
         int newArmy = army + (growth * ARMY_GROWTH_MODIFIER);
         army = Math.min(newArmy, cap);
@@ -99,12 +116,14 @@ public class Nation {
             setStrategy(new OffensiveStrategy());
         }
 
-        if (strategy != null) strategy.execute(this, game);
+        if (strategy != null)
+            strategy.execute(this, game);
         growArmy();
     }
 
     /**
-     * Collect a list of empty frontier coordinates adjacent to ANY province owned by this nation.
+     * Collect a list of empty frontier coordinates adjacent to ANY province owned
+     * by this nation.
      */
     private List<int[]> collectEmptyFrontier(Universalis game) {
         Map map = game.getMap();
@@ -116,12 +135,18 @@ public class Nation {
                     for (int[] directions : Universalis.DIRECTIONS) {
                         int neighborX = col + directions[X];
                         int neighborY = row + directions[Y];
-                        if (map.checkBounds(neighborX, neighborY)) continue;
+                        if (map.checkBounds(neighborX, neighborY))
+                            continue;
                         Province neighbor = map.getProvince(neighborX, neighborY);
                         if (neighbor.getOwner() == null) {
                             boolean duplicate = false;
-                            for (int[] check : frontier) if (check[X] == neighborX && check[Y] == neighborY) { duplicate = true; break; }
-                            if (!duplicate) frontier.add(new int[]{neighborX, neighborY});
+                            for (int[] check : frontier)
+                                if (check[X] == neighborX && check[Y] == neighborY) {
+                                    duplicate = true;
+                                    break;
+                                }
+                            if (!duplicate)
+                                frontier.add(new int[] { neighborX, neighborY });
                         }
                     }
                 }
@@ -143,11 +168,13 @@ public class Nation {
                     for (int[] directions : Universalis.DIRECTIONS) {
                         int neighborX = col + directions[X];
                         int neighborY = row + directions[Y];
-                        if (map.checkBounds(neighborX, neighborY)) continue;
+                        if (map.checkBounds(neighborX, neighborY))
+                            continue;
                         Province neighbor = map.getProvince(neighborX, neighborY);
                         Nation defender = neighbor.getOwner();
                         if (defender != null && defender != this) {
-                            if (this.army > defender.getArmy()) return defender;
+                            if (this.army > defender.getArmy())
+                                return defender;
                         }
                     }
                 }
@@ -158,8 +185,10 @@ public class Nation {
 
     /**
      * Expand into empty neighboring province if available.
-     * If none available, pick a capture candidate and resolve battle using nation armies:
-     * - if attackerArmy > defenderArmy: attacker wins, transfer ownership, halve both armies
+     * If none available, pick a capture candidate and resolve battle using nation
+     * armies:
+     * - if attackerArmy > defenderArmy: attacker wins, transfer ownership, halve
+     * both armies
      * - if attackerArmy < defenderArmy: defender holds, both armies halved
      * - if tied: both armies halved, no transfer
      * Only one action is performed per invocation.
@@ -169,65 +198,83 @@ public class Nation {
         List<int[]> emptyFrontiers = new ArrayList<>();
         List<int[][]> captureCandidates = new ArrayList<>();
 
-        for (int row = 0; row < map.getHeight(); row++) {
-            for (int col = 0; col < map.getWidth(); col++) {
-                Province province = map.getProvince(col, row);
-                if (province.getOwner() == this) {
-                    for (int[] directions : Universalis.DIRECTIONS) {
-                        int neighborX = col + directions[X];
-                        int neighborY = row + directions[Y];
-                        if (map.checkBounds(neighborX, neighborY)) continue;
-                        Province neighbor = map.getProvince(neighborX, neighborY);
-                        if (neighbor.getOwner() == null) {
-                            emptyFrontiers.add(new int[]{neighborX, neighborY});
-                        } else if (neighbor.getOwner() != this) {
-                            captureCandidates.add(new int[][]{{col, row}, {neighborX, neighborY}});
-                        }
-                    }
-                }
-            }
-        }
+        collectTargets(map, emptyFrontiers, captureCandidates);
 
         // Prefer expansion
         if (!emptyFrontiers.isEmpty()) {
-            int[] pick = emptyFrontiers.get(rng.nextInt(emptyFrontiers.size()));
-            Province neighborProvince = map.getProvince(pick[X], pick[Y]);
-            neighborProvince.setOwner(this);
-            captureProvince(neighborProvince);
+            expand(map, emptyFrontiers, rng);
             return;
         }
 
         // Attempt capture
         if (!captureCandidates.isEmpty()) {
-            int idx = rng.nextInt(captureCandidates.size());
-            int[][] chosen = captureCandidates.get(idx);
-            int targetX = chosen[TARGET_INDEX][X];
-            int targetY = chosen[TARGET_INDEX][Y];
-            Province target = map.getProvince(targetX, targetY);
-            Nation defender = target.getOwner();
-            if (defender == null) {
-                // fallback to claiming if owner null
-                target.setOwner(this);
-                captureProvince(target);
-                return;
-            }
+            attack(map, captureCandidates, rng);
+        }
+    }
 
-            int attackerArmy = this.getArmy();
-            int defenderArmy = defender.getArmy();
-
-            if (attackerArmy > defenderArmy) { // attacker wins
-                target.setOwner(this);
-                captureProvince(target);
-                defender.removeProvince(target);
-                this.army = this.army / ARMY_LOSS_FACTOR;
-                defender.setArmy(defender.getArmy() / ARMY_LOSS_FACTOR);
-            } else if (attackerArmy < defenderArmy) { // defender holds
-                this.army = this.army / ARMY_LOSS_FACTOR;
-                defender.setArmy(defender.getArmy() / ARMY_LOSS_FACTOR);
-            } else { // tie: both halved, no transfer
-                this.army = this.army / ARMY_LOSS_FACTOR;
-                defender.setArmy(defender.getArmy() / ARMY_LOSS_FACTOR);
+    private void collectTargets(Map map, List<int[]> emptyFrontiers, List<int[][]> captureCandidates) {
+        for (int row = 0; row < map.getHeight(); row++) {
+            for (int col = 0; col < map.getWidth(); col++) {
+                Province province = map.getProvince(col, row);
+                if (province.getOwner() == this) {
+                    checkNeighbors(map, col, row, emptyFrontiers, captureCandidates);
+                }
             }
         }
+    }
+
+    private void checkNeighbors(Map map, int col, int row, List<int[]> emptyFrontiers,
+            List<int[][]> captureCandidates) {
+        for (int[] directions : Universalis.DIRECTIONS) {
+            int neighborX = col + directions[X];
+            int neighborY = row + directions[Y];
+            if (map.checkBounds(neighborX, neighborY))
+                continue;
+            Province neighbor = map.getProvince(neighborX, neighborY);
+            if (neighbor.getOwner() == null) {
+                emptyFrontiers.add(new int[] { neighborX, neighborY });
+            } else if (neighbor.getOwner() != this) {
+                captureCandidates.add(new int[][] { { col, row }, { neighborX, neighborY } });
+            }
+        }
+    }
+
+    private void expand(Map map, List<int[]> emptyFrontiers, Random rng) {
+        int[] pick = emptyFrontiers.get(rng.nextInt(emptyFrontiers.size()));
+        Province neighborProvince = map.getProvince(pick[X], pick[Y]);
+        neighborProvince.setOwner(this);
+        captureProvince(neighborProvince);
+    }
+
+    private void attack(Map map, List<int[][]> captureCandidates, Random rng) {
+        int idx = rng.nextInt(captureCandidates.size());
+        int[][] chosen = captureCandidates.get(idx);
+        int targetX = chosen[TARGET_INDEX][X];
+        int targetY = chosen[TARGET_INDEX][Y];
+        Province target = map.getProvince(targetX, targetY);
+        Nation defender = target.getOwner();
+
+        if (defender == null) {
+            // fallback to claiming if owner null
+            target.setOwner(this);
+            captureProvince(target);
+            return;
+        }
+
+        resolveBattle(target, defender);
+    }
+
+    private void resolveBattle(Province target, Nation defender) {
+        int attackerArmy = this.getArmy();
+        int defenderArmy = defender.getArmy();
+
+        if (attackerArmy > defenderArmy) { // attacker wins
+            target.setOwner(this);
+            captureProvince(target);
+            defender.removeProvince(target);
+        }
+
+        this.army = this.army / ARMY_LOSS_FACTOR;
+        defender.setArmy(defender.getArmy() / ARMY_LOSS_FACTOR);
     }
 }
