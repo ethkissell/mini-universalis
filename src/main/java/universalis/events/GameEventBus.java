@@ -27,9 +27,4 @@ public class GameEventBus {
             subscriber.accept(event);
         }
     }
-
-    // Helper to reset for testing purposes if needed
-    public static synchronized void reset() {
-        instance = new GameEventBus();
-    }
 }

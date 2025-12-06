@@ -149,7 +149,7 @@ public class GameApplication extends Application {
 
         String message = "Game Over";
         if (!gameInstance.getNations().isEmpty()) {
-            Nation winner = gameInstance.getNations().get(0);
+            Nation winner = gameInstance.getNations().getFirst();
             message += "\nWinner: " + winner.getName();
             message += "\nProvinces: " + winner.getProvinceCount();
             message += "\nDevelopment: " + winner.getTotalDevelopment();
