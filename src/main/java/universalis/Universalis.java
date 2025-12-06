@@ -16,9 +16,11 @@ public class Universalis {
     public static final int[][] DIRECTIONS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
     private static final int MAX_TURNS = 250;
     private static final int MAX_NAME_LENGTH = 10;
+    private static final int MINIMUM_NATION_COUNT = 1;
+    private static final int MAX_IDLE_TURNS = 1000;
 
-    private static final int DEVELOPMENT_PROVINCE_FACTOR = Constants.DEVELOPMENT_PROVINCE_FACTOR;
-    private static final int INCREASE_DEVELOPMENT_VALUE = Constants.INCREASE_DEVELOPMENT_VALUE;
+    private static final int DEVELOPMENT_PROVINCE_FACTOR = 2;
+    private static final int INCREASE_DEVELOPMENT_VALUE = 1;
 
     private final Map map;
     private final List<Nation> nations = new ArrayList<>();
@@ -42,10 +44,6 @@ public class Universalis {
         this.turnDelay = delayMs;
     }
 
-    public int getTurnDelay() {
-        return turnDelay;
-    }
-
     public Map getMap() {
         return map;
     }
@@ -57,18 +55,8 @@ public class Universalis {
     // run a fixed number of turns
     public void runTurns(int turns) {
         for (int turn = 1; turn <= turns && nations.size() > 1; turn++) {
-            for (Nation nation : new ArrayList<>(nations))
-                nation.takeTurn(this);
-            nations.removeIf(nation -> nation.getProvinceCount() == 0);
-            distributeDevelopmentPoints();
-            GameEventBus.getInstance().publish(new GameEvent(GameEvent.Type.TURN_COMPLETED, this));
-            if (turnDelay > 0) {
-                try {
-                    Thread.sleep(turnDelay);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
+            executeTurnCycle();
+            // no extra logic in this method beyond a standard turn cycle
         }
     }
 
@@ -77,25 +65,12 @@ public class Universalis {
         int turn = 0;
         int idleTurns = 0;
         int lastOwned = totalOwnedProvinces();
-        while (nations.size() > 1 && turn < 10000) {
 
-            // print map state probably not necessary when UI is implemented
+        while (nations.size() > MINIMUM_NATION_COUNT && turn < MAX_IDLE_TURNS) {
             System.out.println(this);
 
             turn++;
-            for (Nation nation : new ArrayList<>(nations))
-                nation.takeTurn(this);
-            nations.removeIf(nation -> nation.getProvinceCount() == 0);
-            distributeDevelopmentPoints();
-            GameEventBus.getInstance().publish(new GameEvent(GameEvent.Type.TURN_COMPLETED, this));
-
-            if (turnDelay > 0) {
-                try {
-                    Thread.sleep(turnDelay);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
+            executeTurnCycle();
 
             int currentOwnedProvinces = totalOwnedProvinces();
             if (currentOwnedProvinces == lastOwned)
@@ -111,7 +86,7 @@ public class Universalis {
 
         System.out.println("Took " + turn + " turns.");
         if (!nations.isEmpty()) {
-            Nation winner = nations.get(0);
+            Nation winner = nations.getFirst();
             System.out.println("Finished. Winner: " + winner.getName());
             System.out.println("=== Game Metrics ===");
             System.out.println("  - Total Provinces: " + winner.getProvinceCount());
@@ -124,6 +99,35 @@ public class Universalis {
         GameEventBus.getInstance().publish(new GameEvent(GameEvent.Type.GAME_FINISHED, this));
     }
 
+    private void executeTurnCycle() {
+        // iterate over a snapshot of the list so modifications during turns do not affect iteration
+        for (Nation nation : new ArrayList<>(nations)) {
+            nation.takeTurn(this);
+        }
+
+        // remove nations that lost all provinces
+        nations.removeIf(nation -> nation.getProvinceCount() == 0);
+
+        // apply development distribution
+        distributeDevelopmentPoints();
+
+        // publish a turn-completed event for observers/UI
+        GameEventBus.getInstance().publish(new GameEvent(GameEvent.Type.TURN_COMPLETED, this));
+
+        // apply optional delay between turns if configured
+        sleepIfNeeded();
+    }
+
+    private void sleepIfNeeded() {
+        if (turnDelay <= 0L) return;
+        try {
+            Thread.sleep(turnDelay);
+        } catch (InterruptedException e) {
+            // Ignore interruptions
+            Thread.currentThread().interrupt(); // restore interrupt status
+        }
+    }
+
     private int totalOwnedProvinces() {
         int sum = 0;
         for (Nation nation : new ArrayList<>(nations))
@@ -132,8 +136,7 @@ public class Universalis {
     }
 
     /**
-     * nations get half of their total provinces in development to distribute
-     * randomly
+     * nations get half of their total provinces in development to distribute randomly
      */
     private void distributeDevelopmentPoints() {
         for (Nation nation : new ArrayList<>(nations)) {

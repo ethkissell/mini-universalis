@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import universalis.Constants;
 import universalis.Universalis;
 import universalis.strategy.*;
 import universalis.strategy.Strategy;
@@ -17,11 +16,11 @@ public class Nation {
     private static final int Y = 1;
     private static final int TARGET_INDEX = 1;
 
-    private static final int MINIMUM_ARMY_SIZE = Constants.MINIMUM_ARMY_SIZE;
-    private static final int ARMY_GROWTH_MODIFIER = Constants.ARMY_GROWTH_MODIFIER;
-    private static final int ARMY_CAP_MODIFIER = Constants.ARMY_CAP_MODIFIER;
-    private static final int ARMY_LOSS_FACTOR = Constants.ARMY_LOSS_FACTOR;
-    private static final int CAPTURE_DEVELOPMENT_PENALTY = Constants.CAPTURE_DEVELOPMENT_PENALTY;
+    private static final int MINIMUM_ARMY_SIZE = 1;
+    private static final int ARMY_GROWTH_MODIFIER = 5;
+    private static final int ARMY_CAP_MODIFIER = 8;
+    private static final int ARMY_LOSS_FACTOR = 2;
+    private static final int CAPTURE_DEVELOPMENT_PENALTY = -1;
 
     private int army;
 

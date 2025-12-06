@@ -1,14 +1,13 @@
 package universalis.map;
 
 import java.util.Random;
-import universalis.Constants;
 
 public class Province {
     private static final Random random = new Random();
 
-    private static final int MIN_DEV = Constants.MIN_DEV;
-    private static final int MAX_DEV = Constants.MAX_DEV;
-    private static final int MAX_STARTING_DEV = Constants.MAX_STARTING_DEV;
+    private static final int MIN_DEV = 0;
+    private static final int MAX_DEV = 25;
+    private static final int MAX_STARTING_DEV = 3;
 
     private int development;
     private Nation owner;
